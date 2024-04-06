@@ -20,9 +20,23 @@ export class FovusStack extends Stack {
 
     // ...
     const bucket = new s3.Bucket(this, 'FovusBucket', {
+      bucketName: 'fovusbucket-2',
       versioned: false,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
-      autoDeleteObjects: true
+      autoDeleteObjects: true,
+      // blockPublicAccess: s3.BlockPublicAccess.BLOC,
+      // publicReadAccess: false,
+
+      cors: [
+        {
+          allowedMethods:[s3.HttpMethods.PUT],
+          allowedOrigins: ['http://localhost:*'],
+          allowedHeaders: ['*'],
+        }
+      ]
     });
+    console.log(bucket.bucketName);
+    
+    // bucket.grantPublicAccess('*');
   }
 }
