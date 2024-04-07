@@ -1,10 +1,8 @@
 import { Duration, Stack, StackProps } from 'aws-cdk-lib';
-import * as sns from 'aws-cdk-lib/aws-sns';
-import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
-import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as cdk from 'aws-cdk-lib';
+import * as amplify from 'aws-cdk-lib/aws-amplify';
 
 export class FovusStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -35,8 +33,20 @@ export class FovusStack extends Stack {
         }
       ]
     });
-    console.log(bucket.bucketName);
+
+    const amplifyApp = new cdk.aws_amplify.CfnApp(this, 'FovusAmplifyApp', {
+      name: 'FovusAmplifyApp',
+      repository: 'https://github.com/asmaknikar/Fovus-Frontend',
+      oauthToken: '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',//TODO:move it out of here
+      platform: 'WEB',
+    });
+    const repoBranch = new amplify.CfnBranch(this, 'MasterBranch', {
+      appId: amplifyApp.attrAppId,
+      branchName: 'main',
+    });
+
+    // console.log(bucket.bucketName);
     
-    // bucket.grantPublicAccess('*');
-  }
+      // bucket.grantPublicAccess('*');
+    }
 }
