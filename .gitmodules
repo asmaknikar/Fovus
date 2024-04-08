@@ -1,0 +1,3 @@
+[submodule "aws-cdk/Fovus-Frontend"]
+	path = aws-cdk/Fovus-Frontend
+	url = https://github.com/asmaknikar/Fovus-Frontend.git
