@@ -56,14 +56,14 @@ export class FovusStack extends Stack {
       addCorsOptions(items);
       // there is a cors in the exampkle
 
-      const scriptLambda = new NodejsFunction(this, 'createItemFunction', {
+      const scriptLambda = new NodejsFunction(this, 'runScriptFunction', {
         entry: join(__dirname, 'lambdas', 'script.ts'),
         ...nodeJsFunctionProps,
       })
       scriptLambda.addEventSource(new DynamoEventSource(dynamoTable, {
         startingPosition: StartingPosition.TRIM_HORIZON,
       }));
-      
+
       
       
       
