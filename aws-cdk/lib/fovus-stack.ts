@@ -11,7 +11,8 @@ import { FilterCriteria, Runtime, StartingPosition } from 'aws-cdk-lib/aws-lambd
 import { IResource, LambdaIntegration, MockIntegration, PassthroughBehavior, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { DynamoEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { table } from 'console';
-import { CfnKeyPair, KeyPair, KeyPairFormat } from 'aws-cdk-lib/aws-ec2';
+import { CfnKeyPair, KeyPair, KeyPairFormat, SecurityGroup, Vpc } from 'aws-cdk-lib/aws-ec2';
+import { PolicyStatement, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
 export class FovusStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -64,6 +65,12 @@ export class FovusStack extends Stack {
         format : KeyPairFormat.PPK,
       });
 
+    //   const vpc = new Vpc(this, 'MyVpc', {
+    //     natGateways: 0,
+    //   });
+    //   const securityGroup = new SecurityGroup(this, 'sg', {
+    //     vpc: vpc
+    // });
 
       const nodeJsScriptFunctionProps: NodejsFunctionProps = {
         bundling: {
@@ -88,6 +95,19 @@ export class FovusStack extends Stack {
       scriptLambda.addEventSource(new DynamoEventSource(dynamoTable, {
         startingPosition: StartingPosition.TRIM_HORIZON,
       }));
+      scriptLambda.addToRolePolicy(
+        new PolicyStatement({
+          actions:[
+            "ec2:DescribeKeyPairs",
+            "ec2:CreateKeyPair",
+            "ec2:DeleteKeyPair",
+            "ec2:RunInstances",
+            "ec2:DestroyInstances",
+            "ec2:TerminateInstances",
+          ],
+          resources: ['*'],
+        }),
+      );
 
       
       
