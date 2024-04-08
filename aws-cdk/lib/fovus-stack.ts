@@ -11,6 +11,7 @@ import { FilterCriteria, Runtime, StartingPosition } from 'aws-cdk-lib/aws-lambd
 import { IResource, LambdaIntegration, MockIntegration, PassthroughBehavior, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { DynamoEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { table } from 'console';
+import { CfnKeyPair, KeyPair, KeyPairFormat } from 'aws-cdk-lib/aws-ec2';
 
 export class FovusStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -56,10 +57,34 @@ export class FovusStack extends Stack {
       addCorsOptions(items);
       // there is a cors in the exampkle
 
+
+
+      const keyPair = new KeyPair(this, 'FovusKeyPair', {
+        keyPairName: 'FovusKeyPair3',
+        format : KeyPairFormat.PPK,
+      });
+
+
+      const nodeJsScriptFunctionProps: NodejsFunctionProps = {
+        bundling: {
+          externalModules: [
+            'aws-sdk', // Use the 'aws-sdk' available in the Lambda runtime
+          ],
+        },
+        depsLockFilePath: join(__dirname, 'lambdas', 'package-lock.json'),
+        environment: {
+          PRIMARY_KEY: 'id',
+          TABLE_NAME: dynamoTable.tableName,
+          KEY_PAIR_NAME: keyPair.keyPairName,
+        },
+        runtime: Runtime.NODEJS_20_X,
+      }
+
       const scriptLambda = new NodejsFunction(this, 'runScriptFunction', {
         entry: join(__dirname, 'lambdas', 'script.ts'),
-        ...nodeJsFunctionProps,
-      })
+        ...nodeJsScriptFunctionProps,
+      });
+      dynamoTable.grantReadWriteData(scriptLambda);
       scriptLambda.addEventSource(new DynamoEventSource(dynamoTable, {
         startingPosition: StartingPosition.TRIM_HORIZON,
       }));
